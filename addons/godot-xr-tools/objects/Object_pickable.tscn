@@ -2,7 +2,7 @@
 
 [ext_resource path="res://addons/godot-xr-tools/objects/Object_pickable.gd" type="Script" id=1]
 
-[node name="PickableObject" type="RigidDynamicBody3D"]
+[node name="PickableObject" type="RigidBody3D"]
 script = ExtResource( 1 )
 highlight_mesh_instance = null
 

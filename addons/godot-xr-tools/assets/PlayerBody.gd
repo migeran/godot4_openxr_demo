@@ -114,28 +114,22 @@ var _jump_cooldown := 0
 ## Player CharacterBody3D node
 @onready var kinematic_node: CharacterBody3D = $CharacterBody3D
 
+# Get a guaranteed-valid physics
+func _guaranteed_physics():
+	# Ensure we have a guaranteed-valid GroundPhysicsSettings value
+	var valid_physics := physics as GroundPhysicsSettings
+	if !valid_physics:
+		valid_physics = GroundPhysicsSettings.new()
+		valid_physics.resource_name = "default"
+
+	# Return the guaranteed-valid physics
+	return valid_physics
+
 # Default physics (if not specified by the user or the current ground)
 @onready var default_physics = _guaranteed_physics()
 
 # Collision node
 @onready var _collision_node: CollisionShape3D = $CharacterBody3D/CollisionShape3D
-
-
-# Function to sort movement providers by order
-func sort_by_order(a, b) -> bool:
-	return true if a.order < b.order else false
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	# Get the movement providers ordered by increasing order
-	_movement_providers = get_tree().get_nodes_in_group("movement_providers")
-	_movement_providers.sort_custom(sort_by_order)
-
-	# Propagate defaults
-	_update_enabled()
-	_update_player_radius()
-	_update_collision_layer()
-	_update_collision_mask()
 
 func _update_enabled() -> void:
 	# Update collision_shape
@@ -157,6 +151,22 @@ func _update_collision_layer() -> void:
 func _update_collision_mask() -> void:
 	if kinematic_node:
 		kinematic_node.collision_mask = collision_mask
+
+# Function to sort movement providers by order
+func sort_by_order(a, b) -> bool:
+	return true if a.order < b.order else false
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	# Get the movement providers ordered by increasing order
+	_movement_providers = get_tree().get_nodes_in_group("movement_providers")
+	_movement_providers.sort_custom(sort_by_order)
+
+	# Propagate defaults
+	_update_enabled()
+	_update_player_radius()
+	_update_collision_layer()
+	_update_collision_mask()
 
 func _physics_process(delta):
 	# Do not run physics if in the editor
@@ -289,7 +299,7 @@ func _update_ground_information():
 	else:
 		on_ground = true
 		ground_vector = ground_collision.get_normal()
-		ground_angle = rad2deg(ground_collision.get_angle())
+		ground_angle = rad_to_deg(ground_collision.get_angle())
 		ground_node = ground_collision.get_collider()
 
 		# Select the ground physics
@@ -343,17 +353,6 @@ func _apply_velocity_and_control(delta: float):
 
 	# Move the player body with the desired velocity
 	velocity = move_and_slide(velocity)
-
-# Get a guaranteed-valid physics
-func _guaranteed_physics():
-	# Ensure we have a guaranteed-valid GroundPhysicsSettings value
-	var valid_physics := physics as GroundPhysicsSettings
-	if !valid_physics:
-		valid_physics = GroundPhysicsSettings.new()
-		valid_physics.resource_name = "default"
-
-	# Return the guaranteed-valid physics
-	return valid_physics
 
 # This method verifies the PlayerBody has a valid configuration. Specifically it
 # checks the following:
